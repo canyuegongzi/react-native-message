@@ -3,18 +3,19 @@ import {StyleSheet, TextInput, View, Text, Platform, FlatList} from 'react-nativ
 import {connect} from "react-redux";
 import RefreshListView, {RefreshState} from 'react-native-refresh-list-view'
 import Cell from './Cell'
-import testData from './data'
-import {getMessageListAction} from "../../store/message/messageAction";
 import {getMarketListAction} from "../../store/market/marketAction";
 import Api from "../../api/api";
+import HeadTopBar from "../../common/headTopBar";
+
 
 
 class MarketIndex extends Component {
     constructor(props) {
         super(props)
         this.marketList = props.market.marketList;
+        this.video = props.market.video;
         this.state = {
-            dataList: [],
+            videoDataList: props.market.video,
             refreshState: false,
             emptyViewText: '正在加载中',
             // 下拉刷新
@@ -23,7 +24,7 @@ class MarketIndex extends Component {
             isLoadMore: false,
         }
         this._createEmptyView = this._createEmptyView.bind(this);
-
+        // console.log(props.market.video)
     }
 
     componentDidMount() {
@@ -40,7 +41,7 @@ class MarketIndex extends Component {
     }
 
     renderCell = (info: Object) => {
-        return <Cell info={info}/>
+        return <Cell info={info} />
     }
 
     /**
@@ -78,7 +79,7 @@ class MarketIndex extends Component {
      * @private
      */
     async _onLoadMore() {
-        const page = this.props.market.page;
+        const page = this.props.page;
         // 不处于正在加载更多 && 有下拉刷新过，因为没数据的时候 会触发加载
         if (!this.state.isLoadMore && this.props.market.marketList.length > 0) {
             const newPage = page + 1;
@@ -105,6 +106,12 @@ class MarketIndex extends Component {
         const marketList = this.props.market.marketList;
         return (
             <View style={styles.container}>
+                <View style={{height: 40}}>
+                    <HeadTopBar
+                        name={'动态'}
+                        tabBarVisible={'true'}
+                    />
+                </View>
                 <FlatList
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}

@@ -1,4 +1,4 @@
-export const marketReducer = function (state= { marketList: [], page: 1 }, action) {
+export const marketReducer = function (state= { marketList: [], page: 1, video: [] }, action) {
     switch (action.type) {
         case  'RESET_MARKET_LIST':
             return {
@@ -7,6 +7,10 @@ export const marketReducer = function (state= { marketList: [], page: 1 }, actio
         case  'SET_MARKET_LIST':
             return {
                 ...state , marketList: state.marketList.concat(action.payload)
+            }
+        case  'SET_MARKET_VIDEO':
+            return {
+                ...state , video: state.video.concat(action.payload)
             }
         case  'GET_MARKET_NUMBER':
             return {

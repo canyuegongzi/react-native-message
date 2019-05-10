@@ -55,9 +55,7 @@ export default class RightDrownSelect extends Component<Porpos> {
 }
 const styles = StyleSheet.create({
     con: {
-        paddingTop: 10,
-        paddingBottom: 10,
-        width: scaleSizeW(220),
+        width: scaleSizeW(250),
         height: scaleSizeH(240),
         position: 'absolute',
         top: 45,
@@ -70,10 +68,11 @@ const styles = StyleSheet.create({
     select: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingLeft: 20,
-        paddingRight: 20,
+        paddingLeft: 18,
+        paddingRight: 18,
         height: scaleSizeH(80),
         zIndex: 12,
+        alignItems: 'center',
     },
     head: {
         width: scaleSizeW(60),

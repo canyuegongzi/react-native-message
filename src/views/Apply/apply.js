@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { StyleSheet, TextInput, View,Text} from 'react-native';
+import {StyleSheet, TextInput, View, Text, Platform} from 'react-native';
+import HeadTopBar from "../../common/headTopBar";
+
 
 export default  class ApplyIndex extends Component {
     constructor(props) {
@@ -8,9 +10,21 @@ export default  class ApplyIndex extends Component {
 
     render() {
         return (
-            <View style={{flex:1,alignItems: 'center',justifyContent:'center'}}>
-                <Text style={{fontSize:20}}>功能页面</Text>
+            <View style={styles.container}>
+                <View style={{height: 40}}>
+                    <HeadTopBar
+                        name={'应用'}
+                        tabBarVisible={'true'}
+                    />
+                </View>
+
             </View>
         )
     }
 }
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginTop: Platform.OS == 'ios' ? 20 : 0,
+    },
+})

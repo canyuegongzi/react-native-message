@@ -23,7 +23,7 @@ export default class NetUtils{
         })
             .then(response=>response.json())//把response转为json
             .then(responseJson=> { // 拿到上面的转好的json
-                console.log(responseJson) // 打印返回结果
+                //console.log(responseJson) // 打印返回结果
                 success && success(responseJson)
                 if (responseJson.code == 200){ // 200为请求成功
                     success && success(responseJson.data)
