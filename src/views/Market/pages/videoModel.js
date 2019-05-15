@@ -120,8 +120,8 @@ class VideoModel extends Component {
     }
 
     onBuffer(info) {
-        console.log('缓冲中')
-        console.log(info)
+        // console.log('缓冲中')
+        // console.log(info)
 
     }
 
@@ -140,8 +140,8 @@ class VideoModel extends Component {
             isYetLoad: true,
         })
 
-        console.log('视频加载')
-        console.log(data)
+        // console.log('视频加载')
+        // console.log(data)
     }
 
     onProgress(data) {

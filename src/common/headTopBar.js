@@ -9,7 +9,8 @@ import {
     Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons'; //这个是图标
-import {scaleSizeW}from '../untils/scale'
+import {scaleSizeW} from '../untils/scale'
+
 export default class HeadTopBar extends Component<Porpos> {
     static propTypes = {
         // leftGoToPage: PropTypes.func, // 跳转到对应tab的方法
@@ -31,7 +32,7 @@ export default class HeadTopBar extends Component<Porpos> {
                         // this.props.changeSlideStatus('关')
                     }>
                         <Icon name={this.props.iconLeftName}
-                              size={30}
+                              size={34}
                               color={'#ffffff'}
                         >
                         </Icon>
@@ -41,7 +42,7 @@ export default class HeadTopBar extends Component<Porpos> {
                         this.props.iconRightFun
                     }>
                         <Icon name={this.props.iconRightName}
-                              size={30}
+                              size={34}
                               color={'#ffffff'}>
                         </Icon>
                     </TouchableOpacity>
@@ -55,12 +56,12 @@ export default class HeadTopBar extends Component<Porpos> {
 const styles = StyleSheet.create({
     con: {
         flex: 1,
-        height: 30,
+        height: 45,
     },
     head: {
-        paddingLeft: 10,
-        paddingRight: 10,
-        height: 40,
+        paddingLeft: 15,
+        paddingRight: 15,
+        height: 45,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -73,8 +74,5 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textAlign: 'center',
         color: '#ffffff'
-
     },
-
-
 });

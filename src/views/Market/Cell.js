@@ -7,13 +7,15 @@
  */
 
 import React, {PureComponent, Component} from 'react'
-import {View, Text, StyleSheet, TouchableHighlight, TouchableOpacity, Image, PixelRatio, Dimensions} from 'react-native'
-import {switchCase} from "@babel/types";
+import {View, Text, StyleSheet, TouchableHighlight,TouchableNativeFeedback, TouchableOpacity, Image, PixelRatio, Dimensions} from 'react-native'
+
 import {scaleSizeH, scaleSizeW} from '../../untils/scale';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {connect} from "react-redux";
 import VideoModel from "./pages/videoModel";
+import ImgModel from "./pages/imageModel";
+import {Actions} from "react-native-router-flux";
 
 let {width, height} = Dimensions.get('window');
 const color = {
@@ -31,17 +33,71 @@ class Cell extends Component {
         this._creatTypeFour = this._creatTypeFour.bind(this);
         this._creatTypeFive = this._creatTypeFive.bind(this);
         this.onBuffer = this.onBuffer.bind(this);
+        this.renderMarketSetting = this.renderMarketSetting.bind(this);
         this.videoError = this.videoError.bind(this);
+        this.clickUser = this.clickUser.bind(this);
         this.state = {
             muted: false,
             paused: true,
             videoButton: 'ios-play', // 'ios-pause'
             videoData: [],
             popVideoPlayer: false,
+            popImgModel: false
         }
 
     }
 
+    /*
+    图片浏览弹出框的转态
+     */
+    closeImgModel() {
+        if (this.state.popImgModel) {
+            this.setState({
+                popImgModel: false
+            })
+        } else {
+            this.setState({
+                popImgModel: true
+            })
+        }
+    }
+
+    /*
+    视频播放
+     */
+    videoPlay(info) {
+        // const str = 'video' + info.id.toString()
+        if (!this.state.popVideoPlayer) {
+            this.setState({
+                popVideoPlayer: true
+            })
+        } else {
+            this.setState({
+                popVideoPlayer: false
+            })
+        }
+    }
+
+    onBuffer() {
+        //console.log('缓冲中')
+    }
+
+    videoError() {
+        console.log('播放错误')
+    }
+    /*
+    渲染设置
+     */
+    renderMarketSetting() {
+
+    }
+    /*
+    点击用户头像
+     */
+    clickUser(user) {
+        Actions.linkUser({info: user,userName: user.name,name: user.name,})
+        //alert(user.name + user.userId)
+    }
     /*
     渲染第一种样式 【纯文字】
      */
@@ -49,8 +105,9 @@ class Cell extends Component {
         let info = this.props.info.item
         return (
             <View style={styles.container}>
-                <Image source={{uri: info.user.headPic}} style={styles.icon}/>
-
+                <TouchableNativeFeedback onPress={() => this.clickUser(info.user)}>
+                    <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+                </TouchableNativeFeedback>
                 <View style={styles.rightContainer}>
                     <Text numberOfLines={1} ellipsizeMode={'tail'} style={styles.h1}>{info.user.name}</Text>
                     <Text numberOfLines={3} ellipsizeMode={'tail'} style={styles.p}
@@ -73,28 +130,39 @@ class Cell extends Component {
     _creatTypeTwo() {
         let info = this.props.info.item
         return (
-            <View style={styles.container}>
-                <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+            <View>
+                {this.state.popImgModel === true ? <ImgModel img={{isShow: this.state.popImgModel, imgInfo: info.photo}}
+                                                             fn={this.closeImgModel.bind(this)}/> : null}
+                <View style={styles.container}>
 
-                <View style={styles.rightContainer}>
-                    <Text numberOfLines={1} ellipsizeMode={'tail'} style={styles.h1}>{info.user.name}</Text>
+                    {/*<ImgModel img={{isShow: this.state.popImgModel, imgInfo: info.photo}}*/}
+                    {/*fn={this.closeImgModel.bind(this)}/>*/}
+                    <TouchableNativeFeedback onPress={() => this.clickUser(info.user)}>
+                        <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+                    </TouchableNativeFeedback>
 
-                    <Text numberOfLines={3} ellipsizeMode={'tail'} style={styles.p}
-                          style={{marginTop: 8}}>{info.title}</Text>
-                    <View style={styles.imgWell}>
-                        {info.photo.map((item, index) => {
-                            return (
-                                <Image source={{uri: item.pic}} key={index} style={styles.imgWellImg}/>
-                            )
-                        })}
+                    <View style={styles.rightContainer}>
+                        <Text numberOfLines={1} ellipsizeMode={'tail'} style={styles.h1}>{info.user.name}</Text>
+
+                        <Text numberOfLines={3} ellipsizeMode={'tail'} style={styles.p}
+                              style={{marginTop: 8}}>{info.title}</Text>
+                        <View style={styles.imgWell}>
+                            {info.photo.map((item, index) => {
+                                return (
+                                    <TouchableOpacity key={index} onPress={() => this.closeImgModel()}>
+                                        <Image source={{uri: item.pic}} key={index} style={styles.imgWellImg}/>
+                                    </TouchableOpacity>
+                                )
+                            })}
+                        </View>
+                        <View style={{flex: 1, justifyContent: 'flex-end'}}>
+                            <Text numberOfLines={1} ellipsizeMode={'tail'}
+                                  style={[styles.time, styles.price]}>{info.time}2</Text>
+                        </View>
                     </View>
-                    <View style={{flex: 1, justifyContent: 'flex-end'}}>
-                        <Text numberOfLines={1} ellipsizeMode={'tail'}
-                              style={[styles.time, styles.price]}>{info.time}2</Text>
+                    <View style={styles.setting}>
+                        <Text style={styles.settingWord}>...</Text>
                     </View>
-                </View>
-                <View style={styles.setting}>
-                    <Text style={styles.settingWord}>...</Text>
                 </View>
             </View>
         );
@@ -106,45 +174,38 @@ class Cell extends Component {
     _creatTypeThree() {
         let info = this.props.info.item
         return (
-            <View style={styles.container}>
-                <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+            <View>
+                {this.state.popImgModel === true ? <ImgModel img={{isShow: this.state.popImgModel, imgInfo: info.photo}}
+                                                             fn={this.closeImgModel.bind(this)}/> : null}
+                <View style={styles.container}>
+                    <TouchableNativeFeedback onPress={() => this.clickUser(info.user)}>
+                        <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+                    </TouchableNativeFeedback>
 
-                <View style={styles.rightContainer}>
-                    <Text numberOfLines={1} ellipsizeMode={'tail'} style={styles.h1}>{info.user.name}</Text>
-                    <View style={styles.imgWell}>
-                        {info.photo.map((item, index) => {
-                            return (
-                                <Image source={{uri: item.pic}} key={index} style={styles.imgWellImg}/>
-                            )
-                        })}
+                    <View style={styles.rightContainer}>
+                        <Text numberOfLines={1} ellipsizeMode={'tail'} style={styles.h1}>{info.user.name}</Text>
+                        <View style={styles.imgWell}>
+                            {info.photo.map((item, index) => {
+                                return (
+                                    <TouchableOpacity key={index} onPress={() => this.closeImgModel()}>
+                                        <Image source={{uri: item.pic}} key={index} style={styles.imgWellImg}/>
+                                    </TouchableOpacity>
+                                )
+                            })}
+                        </View>
+                        <View style={{flex: 1, justifyContent: 'flex-end'}}>
+                            <Text numberOfLines={1} ellipsizeMode={'tail'}
+                                  style={[styles.time, styles.price]}>{info.time}3</Text>
+                        </View>
                     </View>
-                    <View style={{flex: 1, justifyContent: 'flex-end'}}>
-                        <Text numberOfLines={1} ellipsizeMode={'tail'}
-                              style={[styles.time, styles.price]}>{info.time}3</Text>
+                    <View style={styles.setting}>
+                        <Text style={styles.settingWord}>...</Text>
                     </View>
-                </View>
-                <View style={styles.setting}>
-                    <Text style={styles.settingWord}>...</Text>
                 </View>
             </View>
         );
     }
 
-/*
-视频播放
- */
-    videoPlay(info) {
-        // const str = 'video' + info.id.toString()
-        if(!this.state.popVideoPlayer) {
-                this.setState({
-                    popVideoPlayer: true
-                })
-        }else {
-            this.setState({
-                popVideoPlayer: false
-            })
-        }
-    }
     /*
         渲染第四种样式 【小视频】
          */
@@ -153,8 +214,11 @@ class Cell extends Component {
         let video = this.props.market.video;
         return (
             <View style={styles.container}>
-                <VideoModel video={{isShow: this.state.popVideoPlayer, videoInfo: info}} fn={this.videoPlay.bind(this)}/>
-                <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+                <VideoModel video={{isShow: this.state.popVideoPlayer, videoInfo: info}}
+                            fn={this.videoPlay.bind(this)}/>
+                <TouchableNativeFeedback onPress={() => this.clickUser(info.user)}>
+                    <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+                </TouchableNativeFeedback>
                 <View style={styles.rightContainer}>
                     <Text numberOfLines={1} ellipsizeMode={'tail'} style={styles.h1}>{info.user.name}</Text>
                     <TouchableOpacity onPress={() => this.videoPlay(info)}>
@@ -200,7 +264,9 @@ class Cell extends Component {
         let info = this.props.info.item
         return (
             <View style={styles.container}>
-                <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+                <TouchableNativeFeedback onPress={() => this.clickUser(info.user)}>
+                    <Image source={{uri: info.user.headPic}} style={styles.icon}/>
+                </TouchableNativeFeedback>
 
                 <View style={styles.rightContainer}>
                     <Text numberOfLines={1} ellipsizeMode={'tail'} style={styles.h1}>{info.user.name}</Text>
@@ -220,13 +286,6 @@ class Cell extends Component {
         );
     }
 
-    onBuffer() {
-        console.log('缓冲中')
-    }
-
-    videoError() {
-        console.log('播放错误')
-    }
 
     render() {
         let info = this.props.info.item

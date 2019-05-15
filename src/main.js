@@ -79,7 +79,7 @@ class Main extends Component {
 const styles = StyleSheet.create({
     center: {
         flex: 1,
-        // flexDirection: 'column',
+        flexDirection: 'column',
         // textAlign: 'center',
         // justifyContent: 'center',
 

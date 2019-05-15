@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet, TextInput, View, Text, Platform, FlatList} from 'react-native';
+import {StyleSheet, TextInput, View, Text, Platform, FlatList, ActivityIndicator, Dimensions} from 'react-native';
 import {connect} from "react-redux";
 import RefreshListView, {RefreshState} from 'react-native-refresh-list-view'
 import Cell from './Cell'
@@ -8,6 +8,7 @@ import Api from "../../api/api";
 import HeadTopBar from "../../common/headTopBar";
 
 
+let {width, height} = Dimensions.get('window');
 
 class MarketIndex extends Component {
     constructor(props) {
@@ -41,7 +42,18 @@ class MarketIndex extends Component {
     }
 
     renderCell = (info: Object) => {
-        return <Cell info={info} />
+        return <Cell info={info}/>
+    }
+
+    /*
+    渲染加载上拉刷新
+     */
+    renderLoadMoreView() {
+        return (
+            <View style={styles.loadingMore}>
+                <ActivityIndicator size={30} color="#000000"/>
+            </View>
+        )
     }
 
     /**
@@ -71,9 +83,13 @@ class MarketIndex extends Component {
                     payload: 1
                 }
             );
+            this.setState({
+                isLoadMore: false
+            })
             this.props.dispatch(getMarketListAction);
         }
     };
+
     /**
      * 加载更多
      * @private
@@ -88,28 +104,45 @@ class MarketIndex extends Component {
                     type: 'SET_PAGE_NUMBER',
                     payload: newPage
                 }
-           );
+            );
+            this.setState({
+                isLoadMore: true
+            })
             // console.log(this.props.market.marketList)
             // console.log(this.props.market.page)
-           await Api.getMyMarketList( {Authorization:'555d5d5ddd', row: 10,page: this.props.market.page},response=>{
+            await Api.getMyMarketList({
+                Authorization: '555d5d5ddd',
+                row: 10,
+                page: this.props.market.page
+            }, response => {
                 console.log(response)
-               this.props.dispatch(
+                this.props.dispatch(
                     {
                         type: 'SET_MARKET_LIST',
                         payload: response.data
                     }
                 )
+                this.setState({
+                    isLoadMore: false
+                })
             })
         }
     }
+
+    rightAddMarket() {
+        alert('添加动态')
+    }
+
     render() {
         const marketList = this.props.market.marketList;
         return (
             <View style={styles.container}>
-                <View style={{height: 40}}>
+                <View style={{height: 45}}>
                     <HeadTopBar
                         name={'动态'}
                         tabBarVisible={'true'}
+                        iconRightName={'ios-add'}
+                        iconRightFun={this.rightAddMarket.bind(this)}
                     />
                 </View>
                 <FlatList
@@ -123,7 +156,7 @@ class MarketIndex extends Component {
                     ListEmptyComponent={this._createEmptyView}
                     //添加头尾布局
                     //ListHeaderComponent={this._createListHeader}
-                    //ListFooterComponent={this._createListFooter}
+                    ListFooterComponent={this.state.isLoadMore === true ? this.renderLoadMoreView() : null}
                     //下拉刷新相关
                     onRefresh={() => this._onRefresh()}
                     refreshing={this.state.refreshState}
@@ -131,6 +164,7 @@ class MarketIndex extends Component {
                     onEndReached={() => this._onLoadMore()}
                     onEndReachedThreshold={0.1}
                 />
+                {/*// {this.state.isLoadMore === true ? this.renderLoadMoreView() : null}*/}
             </View>
         )
     }
@@ -150,6 +184,13 @@ const styles = StyleSheet.create({
         fontSize: 18,
         height: 84,
         textAlign: 'center'
+    },
+    loadingMore: {
+        width: width,
+        height: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffffff'
     }
 })
 export default connect(mapStateToProps)(MarketIndex);

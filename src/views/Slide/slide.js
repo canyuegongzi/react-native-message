@@ -7,14 +7,19 @@ import {
     Text,
     TouchableOpacity,
     AppRegistry,
+    ActivityIndicator,
     FlatList,
-    TouchableNativeFeedback, Dimensions
+    TouchableNativeFeedback, Dimensions, Platform
 } from 'react-native';
 import {connect} from 'react-redux';
 import {getUserListAction} from '../../store/slide/slideAction';
 import Api from "../../api/api";
 import Icon from 'react-native-vector-icons/Ionicons';
 import HeadTopBar from "../../common/headTopBar";
+import {Actions} from "react-native-router-flux";
+import _ from 'lodash'
+import ImgModel from "../Market/Cell";
+import SearchModel from "./page/searchPage";
 
 let {width, height} = Dimensions.get('window');
 
@@ -33,51 +38,43 @@ class SlideIndex extends Component {
             isRefresh: false,
             // 加载更多
             isLoadMore: false,
-            emptyViewText: '加载中'
+            emptyViewText: '加载中',
+            popSearchModel: false
         }
         // const {personList} = this.
     }
 
     componentDidMount() {
-        console.log(this.personList)
-        setTimeout(() => {
-            if (this.personList.length === 0) {
-                this.props.dispatch(getUserListAction)
+        if (this.personList.length === 0) {
+            this.props.dispatch(getUserListAction)
+        }
+        setInterval(() => {
+            if(this.state.isLoadMore && !this.props.slide.personList) {
+                this.setState({
+                    emptyViewText: '暂无数据',
+                    isLoadMore: false
+                })
             }
-        }, 200)
 
-
+        }, 4000)
     }
 /*
 渲染列表
  */
     _renderItem({item}) {
-        return <TouchableOpacity onPress={() => {
-            alert(item.id + item.nick)
+        return <TouchableNativeFeedback onPress={() => {
+            //Actions.searchPage({info: item,name: item.name})
+            Actions.linkUser({info: item,userName: item.name,name: item.name,})
         }}>
             <View style={styles.listRow}>
                 <Image source={{uri: item.photo}} style={styles.imgStyle}></Image>
                 <Text style={styles.itemText} key={item.id}>{item.name}</Text>
             </View>
-        </TouchableOpacity>
+        </TouchableNativeFeedback>
     }
 
     addUser() {
 
-    }
-
-    /**
-     * 空布局
-     */
-    _createEmptyView() {
-        return (
-            <View style={{height: '100%', alignItems: 'center', justifyContent: 'center'}}>
-                <Text style={{fontSize: 16}}>
-                    {this.state.emptyViewText}
-                    {/*暂无数据*/}
-                </Text>
-            </View>
-        );
     }
 
     changeSlideStatus(val) {
@@ -112,44 +109,49 @@ class SlideIndex extends Component {
             this.props.dispatch(getUserListAction)
         }
     };
-
+    closeSearchModel() {
+        Actions.searchPage({iconRightName: '',name: '搜索'})
+    }
     render() {
-        const personList = this.props.slide.personList
+        const personListMiddle = this.props.slide.personList
+        //this.personList = _.cloneDeep(personListMiddle)
         return (
             <View style={{flex: 1}}>
-                <View style={{height: 40}}>
+                <View style={{height: 45}}>
                     <HeadTopBar
                         name={'联系人'}
                         tabBarVisible={'true'}
-                        iconLeftName={'ios-arrow-back'}
-                        iconRightName={'ios-add'}
-                        iconLeftFun={this.changeSlideStatus.bind(this)}
-                        iconRightFun={this.rightMenuStatus.bind(this)}
+                        iconRightName={'ios-arrow-forward'}
+                        iconLeftName={'ios-add'}
+                        iconRightFun={this.changeSlideStatus.bind(this)}
+                        iconLeftFun={this.rightMenuStatus.bind(this)}
                     />
                 </View>
                 <View style={styles.search}>
                     <TextInput underlineColorAndroid="transparent" placeholder="请输入用户"
-                               style={{marginLeft: 10, paddingRight: 40}}
-                               onChangeText={this._onChangeText.bind(this)}
-                               value={this.state.inputValue}
-                               ref="keyWordInput"
-                               onSubmitEditing={() => {
-                                   this.refs.keyWordInput.blur()
-                               }}>
+                               style={{marginLeft: 10, paddingRight: 40,textAlignVertical: 'center'}}
+                               onFocus={() => {this.closeSearchModel()}}
+                               // onChangeText={this._onChangeText.bind(this)}
+                               // value={this.state.inputValue}
+                               // ref="keyWordInput"
+                               // onSubmitEditing={() => {
+                               //     this.refs.keyWordInput.blur()
+                               // }}
+                    >
                     </TextInput>
-                    <TouchableOpacity>
+                    <TouchableNativeFeedback>
                         <Icon name={'ios-search'}
                               size={30}
-                              onPress={() => alert(1111)}
+                              onPress={() => alert(77777)}
                               style={styles.icon}
                         ></Icon>
-                    </TouchableOpacity>
+                    </TouchableNativeFeedback>
                 </View>
                 <FlatList
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
                     keyExtractor={(item, index) => index.toString()}
-                    data={personList}
+                    data={personListMiddle}
                     renderItem={this._renderItem}
                     // 空布局
                     ListEmptyComponent={this._createEmptyView}
@@ -157,6 +159,21 @@ class SlideIndex extends Component {
                     refreshing={this.state.isRefresh}
                     onEndReachedThreshold={0.1}
                 />
+            </View>
+        );
+    }
+    /**
+     * 空布局
+     */
+    _createEmptyView() {
+        return (
+            <View style={{height: '100%', alignItems: 'center', justifyContent: 'center'}}>
+
+                <View style={styles.loadingMore}>
+                    <ActivityIndicator size={30} color="#000000"/>
+                </View>
+                {/*暂无数据*/}
+
             </View>
         );
     }
@@ -178,7 +195,7 @@ const styles = StyleSheet.create({
     item: {
         padding: 10,
         fontSize: 18,
-        height: 44,
+        height: 40,
     },
     listRow: {
         flexDirection: 'row',
@@ -210,11 +227,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         borderBottomWidth: 0.5,
         borderColor: color.border,
+        textAlign: 'center'
     },
     icon: {
         position: 'absolute',
         right: 10,
-        top: -35
+        top: 2
+    },
+    loadingMore: {
+        width: width,
+        height: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 });
 const mapStateToProps = (state, ownProps) => {

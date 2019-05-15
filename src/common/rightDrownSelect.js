@@ -10,24 +10,25 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons'; //这个是图标
 import {scaleSizeH, scaleSizeW} from '../untils/scale'
+import { Actions } from 'react-native-router-flux';
 
 export default class RightDrownSelect extends Component<Porpos> {
     constructor(props) {
         super(props);
         this.rightListRow = [
             {
-                rowClick: ()=> {alert('扫一扫')},
+                rowClick: ()=> {alert('扫码')},
                 iconLeftName: 'md-qr-scanner',
                 name: '扫一扫'
             },
             {
-                rowClick: ()=> {alert('反馈')},
+                rowClick: ()=> {Actions.feedBackPage({name:'反馈'})},
                 iconLeftName: 'ios-information-circle',
                 name: '反馈'
 
             },
             {
-                rowClick: ()=> {alert('关于')},
+                rowClick: ()=> {Actions.aboutPage({name:'关于'})},
                 iconLeftName: 'ios-create',
                 name: '关于'
             }
@@ -56,13 +57,14 @@ export default class RightDrownSelect extends Component<Porpos> {
 const styles = StyleSheet.create({
     con: {
         width: scaleSizeW(250),
-        height: scaleSizeH(240),
+        height: scaleSizeH(270),
         position: 'absolute',
         top: 45,
         right: 5,
         zIndex: 10,
         backgroundColor: 'rgba(0,0,0,.6)',
         flexDirection: 'column',
+        borderRadius: 2
 
     },
     select: {
@@ -70,7 +72,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingLeft: 18,
         paddingRight: 18,
-        height: scaleSizeH(80),
+        height: scaleSizeH(90),
         zIndex: 12,
         alignItems: 'center',
     },
@@ -92,7 +94,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         textAlign: 'center',
-        color: '#ffffff'
+        color: '#ffffff',
+        alignSelf:'center'
 
     },
 

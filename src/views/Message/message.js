@@ -8,7 +8,9 @@ import {
     PixelRatio,
     Image,
     TouchableNativeFeedback,
+    TouchableHighlight,
     FlatList,
+    ActivityIndicator,
     TouchableOpacity
 } from 'react-native';
 import HeadTopBar from '../../common/headTopBar'
@@ -18,6 +20,8 @@ import {connect} from "react-redux";
 import {getMessageListAction} from "../../store/message/messageAction";
 import {scaleSizeW} from '../../untils/scale'
 import RightDrownSelect from '../../common/rightDrownSelect'
+import {Actions} from 'react-native-router-flux';
+
 
 let {width, height} = Dimensions.get('window');
 const color = {
@@ -52,8 +56,8 @@ class MessageIndex extends Component {
         // this.SelectMenuItemCallBack = this.SelectMenuItemCallBack.bind(this);
         this._onItemClick = this._onItemClick.bind(this);
         this._renderItem = this._renderItem.bind(this);
+        this.renderLoadMoreView = this._createEmptyView.bind(this);
     }
-
     /*
         @params: {val}
         侧边栏是否打开
@@ -80,10 +84,14 @@ class MessageIndex extends Component {
             this.props.dispatch(getMessageListAction);
         }
         setInterval(() => {
-            this.setState({
-                emptyViewText: '暂无数据'
-            })
-        }, 2000)
+            if (this.state.isLoadMore && !this.props.message.messageList) {
+                this.setState({
+                    emptyViewText: '暂无数据',
+                    isLoadMore: false
+                })
+            }
+
+        }, 4000)
 
     }
 
@@ -91,16 +99,21 @@ class MessageIndex extends Component {
     渲染单行
      */
     _renderItem({item}) {
-        return <TouchableOpacity onPress={() => {
-            if (this.state.rightDrownSelect) {
-                this.setState({
-                    rightDrownSelect: false,
-                });
-                return false;
+        return <TouchableNativeFeedback
+            onPress={() => {
+                if (this.state.rightDrownSelect) {
+                    this.setState({
+                        rightDrownSelect: false,
+                    });
+                    return false;
+                }
+                this._onItemClick(item)
+            }}
+            onLongPress={() => {
+                this.deleteMessage(item)
+                }
             }
-            alert(item.name)
-        }
-        }>
+        >
             <View style={styles.listRow}>
                 <Image source={{uri: item.photo}} style={styles.imgStyle}>
                 </Image>
@@ -115,9 +128,29 @@ class MessageIndex extends Component {
                         style={styles.messageNumber}>{item.message.length > 10 ? 10 + '+' : item.message.length}</Text>
                 </View>
             </View>
-        </TouchableOpacity>
+        </TouchableNativeFeedback>
     }
+    /*
+    删除消息
+     */
+    deleteMessage(data) {
+        let messageList  = this.props.message.messageList;
+        const newMessageList = messageList.filter((item) => {
+            if(item.id != data.id) {
+                return item;
+            }
+        })
+        // 删除消息
 
+        // ..............................................//
+        this.props.dispatch(
+            {
+                type: 'SET_MESSAGE_LIST',
+                payload: newMessageList
+            }
+        )
+
+    }
     /*
     渲染
      */
@@ -144,7 +177,7 @@ class MessageIndex extends Component {
                     flex: 1,
                     backgroundColor: this.props.message.slideIsOpen === true ? 'rgba(0,0,0,0.5)' : '#eeeeee',
                 }}>
-                    <View style={{height: 40}}>
+                    <View style={{height: 45}}>
                         <HeadTopBar
                             name={'消息'}
                             tabBarVisible={'true'}
@@ -167,7 +200,7 @@ class MessageIndex extends Component {
                             ListEmptyComponent={this._createEmptyView}
                             //添加头尾布局
                             //ListHeaderComponent={this._createListHeader}
-                            //ListFooterComponent={this._createListFooter}
+                            //ListFooterComponent={this.state.isLoadMore === true ? this.renderLoadMoreView() : null}
                             //下拉刷新相关
                             onRefresh={() => this._onRefresh()}
                             refreshing={this.state.isRefresh}
@@ -214,10 +247,12 @@ class MessageIndex extends Component {
     _createEmptyView() {
         return (
             <View style={{height: '100%', alignItems: 'center', justifyContent: 'center'}}>
-                <Text style={{fontSize: 16}}>
-                    {this.state.emptyViewText}
-                    {/*暂无数据*/}
-                </Text>
+
+                <View style={styles.loadingMore}>
+                    <ActivityIndicator size={30} color="#000000"/>
+                </View>
+                {/*暂无数据*/}
+
             </View>
         );
     }
@@ -232,6 +267,9 @@ class MessageIndex extends Component {
             this.page = 1
             // this._getHotList()
             this.props.dispatch(getMessageListAction)
+            this.setState({
+                isLoadMore: false
+            })
         }
     };
 
@@ -251,7 +289,27 @@ class MessageIndex extends Component {
      * item点击事件
      */
     _onItemClick(item) {
-        alert(111)
+        console.log(item)
+        Actions.MessageDetailIndex({
+            userName: item.name,
+            name: item.name,
+            message: item.message,
+            id: item.id,
+            iconRightFun: () => {
+                Actions.linkUser({info: item, userName: item.name, name: item.name,})
+            }
+        })
+    }
+
+    /*
+    渲染加载上拉刷新
+     */
+    renderLoadMoreView() {
+        return (
+            <View style={styles.loadingMore}>
+                <ActivityIndicator size={30} color="#000000"/>
+            </View>
+        )
     }
 }
 
@@ -269,10 +327,10 @@ const styles = StyleSheet.create({
     },
     listRow: {
         flexDirection: 'row',
-        paddingTop:10,
-        paddingBottom:10,
-        paddingLeft: 20,
-        paddingRight: 20,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 10,
+        paddingRight: 10,
         borderBottomWidth: 0.5,
         borderColor: color.border,
         backgroundColor: 'white',
@@ -315,7 +373,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         position: 'absolute',
         right: 10,
-        top:-5
+        top: -5
     },
     message: {
         flexDirection: 'column',
@@ -327,7 +385,7 @@ const styles = StyleSheet.create({
     time: {
         fontSize: 6,
         flexDirection: 'column',
-        marginBottom:6,
+        marginBottom: 6,
     },
     messageNumber: {
         flex: 1,
@@ -345,6 +403,12 @@ const styles = StyleSheet.create({
         right: 10,
         bottom: -5
 
+    },
+    loadingMore: {
+        width: width,
+        height: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 });
 const mapStateToProps = (state, ownProps) => {

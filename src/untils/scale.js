@@ -22,8 +22,8 @@ let screenPxH = ReactNative.PixelRatio.getPixelSizeForLayoutSize(screenH);
  * @returns {Number} dp
  */
 export function setSpText(size: Number) {
-    console.log("screenW======" + screenW)
-    console.log("screenPxW======" + screenPxW)
+    // console.log("screenW======" + screenW)
+    // console.log("screenPxW======" + screenPxW)
     var scaleWidth = screenW / designWidth;
     var scaleHeight = screenH / designHeight;
     var scale = Math.min(scaleWidth, scaleHeight);
